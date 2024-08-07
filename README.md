@@ -1,2 +1,2 @@
-# amrn-escalabirras-dual
-Escalabirras individual with two towers and only one ranking
+# amrn-escalabirras-team
+Application to count beer crates for participants in this game

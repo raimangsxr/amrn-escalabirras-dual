@@ -1,0 +1,33 @@
+<div class="flex flex-col">
+  <div class="mt-5 flex justify-center items-center p-4" *ngIf="getNewRecord() == null">
+    <div>
+      <div class="text-6xl font-semibold">
+        <span class="box-decoration-slice bg-gradient-to-r from-indigo-600 to-pink-500 text-white px-4 py-1 rounded">
+          {{ title }}
+        </span>
+      </div>
+      <div class="mt-4 text-4xl text-right font-extrabold">
+        <span class="box-decoration-slice bg-gradient-to-r to-indigo-600 from-pink-500 text-white px-2 rounded">
+          {{ subtitle }}
+        </span>
+      </div>
+    </div>
+    <div class="ml-5">
+      <img src="../assets/logo-motoclub.png" class="w-72" />
+    </div>
+  </div>
+  <div class="mt-4 flex flex-row items-center justify-around" *ngIf="getNewRecord() == null">
+    <div class="basis-1/5">
+      <img class="" src="../assets/logo-escalabirras.png" />
+    </div>
+    <div class="basis-3/5">
+      <app-top3></app-top3>
+    </div>
+  </div>
+
+  <div *ngIf="getNewRecord() == null">
+    <app-manager></app-manager>
+  </div>
+
+  <app-winner *ngIf="getNewRecord() != null"></app-winner>
+</div>

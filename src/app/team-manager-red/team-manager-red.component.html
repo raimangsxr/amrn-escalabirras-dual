@@ -1,0 +1,25 @@
+<div class="mt-5 flex flex-col justify-center items-center">
+  <span class="text-6xl font-normal p-4 rounded-md text-white bg-red-600">Equipo Rojo</span>
+</div>
+<div class="mt-14 flex flex-col justify-center items-center">
+  <div class="box-decoration-slice bg-gradient-to-r to-indigo-600 from-pink-500 text-white pt-5 px-8 rounded">
+    <p class="text-6xl font-bold">{{getCurrentParticipant()!.name}}</p>
+  </div>
+  <div class="mt-3">
+    <p class="text-8xl font-semibold">{{getCurrentParticipant()!.crates}} cajas!</p>
+  </div>
+</div>
+
+<div class="mt-5 flex flex-row justify-center items-center">
+  <div class="py-3">
+    <span class="text-base font-light">Participante</span>
+  </div>
+  <div class="py-3 ml-3">
+    <div class="border-2 rounded-md">
+      <input type="text" maxlength="20" class="p-1 rounded" id="name" placeholder="Nombre.." autocomplete="off" [(ngModel)]="name"
+        (keydown.enter)="createParticipant()"
+        />
+    </div>
+  </div>
+</div>
+    

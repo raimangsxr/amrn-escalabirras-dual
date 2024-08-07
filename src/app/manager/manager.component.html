@@ -1,0 +1,31 @@
+<div class="flex flex-row items-center justify-center" *ngIf="getNewRecord() == null">
+  <div class="basis-4/12">
+    <div class="ml-4">
+      <app-participant-list></app-participant-list>
+    </div>
+  </div>
+  <div class="basis-4/12">
+    <div class="-ml-8 mr-8 border-solid border-8 border-red-600 rounded-lg">
+      <app-team-manager-red (newParticipantEvent)="addParticipantRed($event)"></app-team-manager-red>
+    </div> 
+  </div>
+  <div class="basis-4/12">
+    <div class="mr-4 border-solid border-8 border-indigo-600 rounded-lg">
+      <app-team-manager-blue (newParticipantEvent)="addParticipantBlue($event)"></app-team-manager-blue>
+    </div>
+  </div>
+</div>
+
+<div class="mt-2 flex flex-row items-center justify-center">
+  <div class="basis-4/12">
+  </div>
+  <div class="basis-1/12">
+    <button #fin class="ml-2 text-base font-light p-1 border-2 rounded"
+      (keydown.a)="addCrate(0)"
+      (keydown.z)="removeCrate(0)"
+      (keydown.s)="addCrate(1)" 
+      (keydown.x)="removeCrate(1)"
+      (keydown.enter)="finishGame()"
+    >Finalizar juego</button>
+  </div>
+</div>

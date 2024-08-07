@@ -1,0 +1,8 @@
+<div>
+  <div class="mb-5 text-3xl font-medium">Últimos participantes ({{getParticipantsCount()}} totales)</div>
+  <div *ngFor="let participant of getParticipants()">
+    <div class="ml-6 mt-2 text-xl">
+      <app-participant [participant]="participant"></app-participant>
+    </div>
+  </div>
+</div>

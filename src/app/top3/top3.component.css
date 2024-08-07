@@ -1,0 +1,17 @@
+.alert-gold{
+  color: #7d5700;
+  background-color: #ffd700;
+  border-color: #ffd700
+}
+  
+.alert-silver{
+  color: #555555;
+  background-color: #c3c3c3;
+  border-color: #d7d7d7
+}
+
+.alert-bronze{
+  color: #7d4f3b;
+  background-color:#f1a877;
+  border-color: #f1ba94
+}
