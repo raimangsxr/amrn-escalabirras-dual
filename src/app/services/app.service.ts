@@ -79,12 +79,12 @@ export class AppService {
       this.setNewRecord(participant);
   }
 
-  finishGame(participant: Participant): void {
+  finishGame(participant: Participant, team: number): void {
     if (participant.id === 0) return;
 
     this.saveParticipant(participant);
     this.saveWinnerParticipant(participant);
-    this.getCurrentParticipants()[0] = {id:0, name:"- - -", crates: 0};
+    this.getCurrentParticipants()[team] = {id:0, name:"- - -", crates: 0};
   }
 
   addCrate(team: number): void {
