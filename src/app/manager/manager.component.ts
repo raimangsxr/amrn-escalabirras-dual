@@ -30,8 +30,8 @@ export class ManagerComponent {
     this.appService.removeCrate(team);
   }
 
-  finishGame(): void {
-    this.appService.finishGame();
+  finishGame(participant: Participant): void {
+    this.appService.finishGame(participant);
   }
 
   addParticipantRed(participant: Participant): void {
@@ -40,6 +40,14 @@ export class ManagerComponent {
 
   addParticipantBlue(participant: Participant): void {
     this.appService.addParticipantToGame(participant, 1);
+  }
+
+  getParticipantRed(): Participant {
+    return this.appService.getCurrentParticipants()[0];
+  }
+
+  getParticipantBlue(): Participant {
+    return this.appService.getCurrentParticipants()[1];
   }
 
 }

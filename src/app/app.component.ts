@@ -7,7 +7,7 @@ import { AppService } from './services/app.service';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'II Torneo Motero de Escalabirras por equipos';
+  title = 'II Torneo Motero de Escalabirras';
   subtitle = 'XV Concentración Motera Ría de Noia';
 
   constructor(private appService: AppService) {}

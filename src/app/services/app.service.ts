@@ -79,39 +79,23 @@ export class AppService {
       this.setNewRecord(participant);
   }
 
-  finishGame(): void {
-    const redTeam = this.getCurrentParticipants()[0];
-    const blueTeam = this.getCurrentParticipants()[1];
-    if (redTeam.id === 0 || blueTeam.id === 0) {
-      return;
-    }
-    this.saveParticipant(redTeam);
-    this.saveParticipant(blueTeam);
-    if (redTeam.crates > blueTeam.crates) {      
-      this.saveWinnerParticipant(redTeam);
-    } else if (redTeam.crates < blueTeam.crates) {
-      this.saveWinnerParticipant(blueTeam);
-    } else {
-      console.log("empate!");
-      this.saveWinnerParticipant(redTeam);
-      this.saveWinnerParticipant(blueTeam);
-    }
-    this.currentParticipants = [{id:0, name:"- - -", crates: 0}, {id:0, name:"- - -", crates: 0}];
+  finishGame(participant: Participant): void {
+    if (participant.id === 0) return;
+
+    this.saveParticipant(participant);
+    this.saveWinnerParticipant(participant);
+    this.getCurrentParticipants()[0] = {id:0, name:"- - -", crates: 0};
   }
 
   addCrate(team: number): void {
-    const redTeam = this.getCurrentParticipants()[0];
-    const blueTeam = this.getCurrentParticipants()[1];
-    if (redTeam.id === 0 || blueTeam.id === 0) {
+    if (this.currentParticipants[team].id === 0) {
       return;
     }
     this.currentParticipants[team].crates += 1;
   }
 
   removeCrate(team: number): void {
-    const redTeam = this.getCurrentParticipants()[0];
-    const blueTeam = this.getCurrentParticipants()[1];
-    if (redTeam.id === 0 || blueTeam.id === 0) {
+    if (this.currentParticipants[team].id === 0) {
       return;
     }
     if (this.currentParticipants[team].crates > 0) {

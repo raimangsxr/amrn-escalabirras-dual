@@ -23,9 +23,10 @@
     <button #fin class="ml-2 text-base font-light p-1 border-2 rounded"
       (keydown.a)="addCrate(0)"
       (keydown.z)="removeCrate(0)"
-      (keydown.s)="addCrate(1)" 
+      (keydown.s)="addCrate(1)"
       (keydown.x)="removeCrate(1)"
-      (keydown.enter)="finishGame()"
+      (keydown.q)="finishGame(this.getParticipantRed())"
+      (keydown.w)="finishGame(this.getParticipantBlue())"
     >Finalizar juego</button>
   </div>
 </div>
