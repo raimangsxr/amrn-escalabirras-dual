@@ -131,3 +131,20 @@ dist
 
 .angular/
 .vscode/
+
+# Python / backend
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+backend/*.egg-info/
+backend/build/
+backend/dist/
+backend/dev.db
+backend/dev.db-journal
+.env
+docker-compose.override.yml

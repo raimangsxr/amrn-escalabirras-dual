@@ -1,19 +1,21 @@
-import { Component } from '@angular/core';
-import { AppService } from './services/app.service';
+import { Component, OnInit } from '@angular/core';
+import { AuthService } from './auth/auth.service';
+import { LayoutService } from './services/layout.service';
 
 @Component({
   selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+  template: `<router-outlet></router-outlet>`,
+  styles: [`:host { display: block; height: 100%; min-height: 0; }`]
 })
-export class AppComponent {
-  title = 'II Torneo Motero de Escalabirras';
-  subtitle = 'XV Concentración Motera Ría de Noia';
+export class AppComponent implements OnInit {
+  constructor(
+    private auth: AuthService,
+    // LayoutService is injected so its constructor runs and the
+    // ResizeObserver is wired up for the lifetime of the app.
+    private layout: LayoutService
+  ) {}
 
-  constructor(private appService: AppService) {}
-
-  getNewRecord(): any {
-    return this.appService.getNewRecord();
+  ngOnInit(): void {
+    void this.auth.bootstrap();
   }
-
 }

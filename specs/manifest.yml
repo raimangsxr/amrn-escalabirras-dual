@@ -1,0 +1,56 @@
+project: escalabirras
+
+contracts:
+  - id: api-rest
+    path: specs/contracts/api-rest/contract.md
+    status: active
+    description: REST + JSON contract for the FastAPI backend. Auth added by 004-auth-and-embed-tokens.
+  - id: persistence-postgres
+    path: specs/contracts/persistence-postgres/contract.md
+    status: active
+    description: PostgreSQL schema and data-access contract. Adds embed_tokens table in 004-auth-and-embed-tokens.
+  - id: frontend-angular
+    path: specs/contracts/frontend-angular/contract.md
+    status: active
+    description: Angular 16 frontend contract. Login + embed-token flow added by 004-auth-and-embed-tokens. Responsive iframe sizing added by 005-responsive-iframe.
+  - id: auth
+    path: specs/contracts/auth/contract.md
+    status: active
+    description: Authentication and embed-token contract. Introduced by 004-auth-and-embed-tokens.
+
+changes:
+  - id: 001-current-behavior-baseline
+    path: specs/changes/001-current-behavior-baseline/
+    status: superseded
+    contract: app-core
+    description: Initial SDD baseline for documenting existing behavior. Superseded by 003-migrate-storage.
+  - id: 002-backend-foundation
+    path: specs/changes/002-backend-foundation/
+    status: active
+    contract: api-rest
+    description: Introduce FastAPI + Alembic + PostgreSQL backend under backend/.
+  - id: 003-migrate-storage
+    path: specs/changes/003-migrate-storage/
+    status: active
+    contract: frontend-angular
+    description: Rewire the Angular frontend from localStorage to the FastAPI backend.
+  - id: 004-auth-and-embed-tokens
+    path: specs/changes/004-auth-and-embed-tokens/
+    status: active
+    contract: auth
+    description: Add single-operator login (JWT) and embed-token system for iframe embedding.
+  - id: 005-responsive-iframe
+    path: specs/changes/005-responsive-iframe/
+    status: active
+    contract: frontend-angular
+    description: Make the Angular frontend responsive so it adapts to the shape of the iframe it is embedded in.
+  - id: 006-production-readiness
+    path: specs/changes/006-production-readiness/
+    status: active
+    contract: api-rest
+    description: Production-readiness pass: Dockerfiles, production docker-compose, production security headers, frontend build-time env replacement, PRODUCTION.md checklist.
+
+active:
+  change: specs/changes/006-production-readiness/
+  contract: specs/contracts/api-rest/contract.md
+  context_pack: specs/changes/006-production-readiness/context-pack.md

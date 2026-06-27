@@ -1,7 +1,39 @@
-/* You can add global styles to this file, and also import other style files */
+/* Global styles for the escalabirras Angular SPA. */
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: #ffffff;
+  color: #1f2937;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+app-root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+/* Allow inner flex containers to shrink below their content size. */
+.min-h-0 {
+  min-height: 0;
+}
+
+/* Reduced motion: skip the random background flip in the celebration. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

@@ -1,6 +1,5 @@
-import { Component, ElementRef, Input, ViewChild } from "@angular/core";
+import { Component, ElementRef, ViewChild } from "@angular/core";
 import { AppService } from '../services/app.service';
-import { Participant } from '../participant/participant';
 
 @Component({
   selector: 'app-manager',
@@ -8,46 +7,23 @@ import { Participant } from '../participant/participant';
   styleUrls: ['./manager.component.css']
 })
 export class ManagerComponent {
-
   @ViewChild('fin', {static: true}) finField!: ElementRef;
 
-  constructor(
-    private appService: AppService
-  ) { }
+  constructor(private appService: AppService) {}
 
-  getNewRecord(): Participant | null {
-    return this.appService.getNewRecord();
+  addParticipant(name: string, team: 0 | 1): void {
+    this.appService.createParticipant(name, team);
   }
 
-  createParticipant(): void {
-  }
-
-  addCrate(team: number): void {
+  addCrate(team: 0 | 1): void {
     this.appService.addCrate(team);
   }
 
-  removeCrate(team: number): void {
+  removeCrate(team: 0 | 1): void {
     this.appService.removeCrate(team);
   }
 
-  finishGame(participant: Participant, team: number): void {
-    this.appService.finishGame(participant, team);
+  clearSlot(team: 0 | 1): void {
+    this.appService.clearSlot(team);
   }
-
-  addParticipantRed(participant: Participant): void {
-    this.appService.addParticipantToGame(participant, 0);
-  }
-
-  addParticipantBlue(participant: Participant): void {
-    this.appService.addParticipantToGame(participant, 1);
-  }
-
-  getParticipantRed(): Participant {
-    return this.appService.getCurrentParticipants()[0];
-  }
-
-  getParticipantBlue(): Participant {
-    return this.appService.getCurrentParticipants()[1];
-  }
-
 }

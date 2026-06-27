@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Observable } from 'rxjs';
 import { Participant } from '../participant/participant';
 import { AppService } from '../services/app.service';
 
@@ -8,12 +9,13 @@ import { AppService } from '../services/app.service';
   styleUrls: ['./top3.component.css']
 })
 export class Top3Component {
-  constructor(private appService: AppService) { }
+  readonly top3$: Observable<Participant[]>;
 
-  getTop3(): Participant[] {
-    const sortedParticipants = this.appService.getWinnerParticipants().sort(
-      (a, b) => (a.crates < b.crates) ? 1 : ((a.crates > b.crates) ? -1 : 0)
-    );
-    return sortedParticipants.slice(0, 3);
+  constructor(private appService: AppService) {
+    this.top3$ = this.appService.top3$;
+  }
+
+  trackById(_index: number, item: Participant | null): number {
+    return item?.id ?? -1;
   }
 }

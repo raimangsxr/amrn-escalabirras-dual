@@ -1,0 +1,43 @@
+name: escalabirras
+
+# Local-dev compose. Brings up Postgres and (optionally) Adminer so a
+# developer can run the backend and frontend on the host without
+# containerizing them. The backend uses this DB via
+# `DATABASE_URL=postgresql+psycopg://escalabirras:escalabirras@localhost:5432/escalabirras`.
+#
+# Production deploys use `docker-compose.yml` (api + db with TLS at
+# the proxy). See PRODUCTION.md.
+
+services:
+  db:
+    image: postgres:16
+    container_name: escalabirras-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: escalabirras
+      POSTGRES_PASSWORD: escalabirras
+      POSTGRES_DB: escalabirras
+    ports:
+      - "5432:5432"
+    volumes:
+      - escalabirras-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U escalabirras -d escalabirras"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  adminer:
+    image: adminer:4.8.1
+    container_name: escalabirras-adminer
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+
+volumes:
+  escalabirras-pgdata:

@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Observable } from 'rxjs';
 import { AppService } from '../services/app.service';
 import { Participant } from '../participant/participant';
 
@@ -8,14 +9,9 @@ import { Participant } from '../participant/participant';
   styleUrls: ['./participant-list.component.css']
 })
 export class ParticipantListComponent {
-  constructor(private appService: AppService) { }
+  readonly history$: Observable<Participant[]>;
 
-  getParticipants(): Participant[] {
-    return this.appService.getParticipants().sort((a, b) => (a.id < b.id) ? -1 : ((a.id > b.id) ? 1 : 0)).slice(-10).reverse();
+  constructor(private appService: AppService) {
+    this.history$ = this.appService.history$;
   }
-
-  getParticipantsCount(): number {
-    return this.appService.getParticipants().filter(p => p.id > 0).length;
-  }
-
 }

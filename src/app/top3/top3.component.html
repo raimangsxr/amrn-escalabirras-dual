@@ -1,15 +1,21 @@
-<div class="text-4xl font-medium">Mayores escaladas (TOP 3)</div>
-<div class="flex flex-col justify-center mt-4">
-  <div class="flex items-center h-16 alert alert-gold text-5xl rounded-2xl p-3">
-    <img src="../../assets/first-award.png" class="-ml-10 w-20"/>
-    <app-participant [participant]="getTop3()[0]" class="ml-6"></app-participant>
+<div>
+  <div class="text-[clamp(1rem,2.5vw,2.25rem)] font-medium text-center">
+    Mayores escaladas (TOP 3)
   </div>
-  <div class="flex items-center h-16 alert alert-silver text-5xl rounded-2xl p-3 mt-3">
-    <img src="../../assets/second-award.png" class="-ml-10 w-20"/>
-    <app-participant [participant]="getTop3()[1]" class="ml-6"></app-participant>
-  </div>
-  <div class="flex items-center h-16 alert alert-bronze text-5xl rounded-2xl p-3 mt-3">
-    <img src="../../assets/third-award.png" class="-ml-10 w-20"/>
-    <app-participant [participant]="getTop3()[2]" class="ml-6"></app-participant>
-  </div>
+  <ng-container *ngIf="top3$ | async as top3">
+    <div class="flex flex-col justify-center mt-2 md:mt-4 gap-2 md:gap-3">
+      <div class="flex items-center h-12 md:h-16 alert alert-gold text-[clamp(1rem,2.2vw,3rem)] rounded-xl md:rounded-2xl p-2 md:p-3 gap-2">
+        <img src="../../assets/first-award.png" class="-ml-6 md:-ml-10 w-12 md:w-20 flex-shrink-0" />
+        <span class="font-medium truncate">{{ (top3[0] && top3[0].crates) || 0 }} cajas - {{ (top3[0] && top3[0].name) || '- - -' | titlecase }}</span>
+      </div>
+      <div class="flex items-center h-12 md:h-16 alert alert-silver text-[clamp(1rem,2.2vw,3rem)] rounded-xl md:rounded-2xl p-2 md:p-3 gap-2">
+        <img src="../../assets/second-award.png" class="-ml-6 md:-ml-10 w-12 md:w-20 flex-shrink-0" />
+        <span class="font-medium truncate">{{ (top3[1] && top3[1].crates) || 0 }} cajas - {{ (top3[1] && top3[1].name) || '- - -' | titlecase }}</span>
+      </div>
+      <div class="flex items-center h-12 md:h-16 alert alert-bronze text-[clamp(1rem,2.2vw,3rem)] rounded-xl md:rounded-2xl p-2 md:p-3 gap-2">
+        <img src="../../assets/third-award.png" class="-ml-6 md:-ml-10 w-12 md:w-20 flex-shrink-0" />
+        <span class="font-medium truncate">{{ (top3[2] && top3[2].crates) || 0 }} cajas - {{ (top3[2] && top3[2].name) || '- - -' | titlecase }}</span>
+      </div>
+    </div>
+  </ng-container>
 </div>

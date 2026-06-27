@@ -1,0 +1,21 @@
+# Example override for the production compose.
+#
+# Copy to `docker-compose.override.yml` (already gitignored) and edit
+# as needed. Common uses:
+#
+#   - Pin a different image tag for canary deploys.
+#   - Mount a host directory for live DB access.
+#   - Add a reverse proxy with TLS termination.
+#
+# Reference: https://docs.docker.com/compose/extends/
+
+services:
+  api:
+    # image: escalabirras-api:1.2.3
+    # volumes:
+    #   - ./secrets/jwt_secret.txt:/run/secrets/jwt_secret.txt:ro
+    # environment:
+    #   JWT_SECRET_FILE: /run/secrets/jwt_secret.txt
+
+  db:
+    # ports: !reset   # uncomment to disable the host port mapping

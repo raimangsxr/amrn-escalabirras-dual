@@ -1,5 +1,4 @@
-import { Component } from '@angular/core';
-import { AppService } from '../services/app.service';
+import { Component, Input } from '@angular/core';
 import { Participant } from '../participant/participant';
 
 @Component({
@@ -8,14 +7,9 @@ import { Participant } from '../participant/participant';
   styleUrls: ['./winner.component.css']
 })
 export class WinnerComponent {
+  @Input() participant: Participant | null = null;
 
-  constructor(private appService: AppService) {}
-
-  getNewRecord(): Participant | null {
-    return this.appService.getNewRecord();
-  }
-
-  getBackgroundColor(): boolean {
-    return Math.random() > 0.5 ? true : false;
+  flipBackground(): boolean {
+    return Math.random() > 0.5;
   }
 }

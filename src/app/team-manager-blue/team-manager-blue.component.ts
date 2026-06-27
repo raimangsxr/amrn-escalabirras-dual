@@ -8,21 +8,24 @@ import { AppService } from '../services/app.service';
   styleUrls: ["./team-manager-blue.component.css"]
 })
 export class TeamManagerBlueComponent {
+  @Output() newParticipantEvent = new EventEmitter<string>();
 
-  @Output() newParticipantEvent = new EventEmitter<Participant>();
   name: string = '';
 
   constructor(private appService: AppService) {}
 
+  readonly slot$ = this.appService.currentSlots$;
+
   createParticipant(): void {
-    if (this.name != '') {
-      const newParticipant = this.appService.createParticipant(this.name);
-      this.newParticipantEvent.emit(newParticipant);
+    const trimmed = this.name.trim();
+    if (!trimmed) {
+      return;
     }
+    this.newParticipantEvent.emit(trimmed);
+    this.name = '';
   }
 
-  getCurrentParticipant(): Participant | null {
-    return this.appService.getCurrentParticipants()[1];
+  trackById(_index: number, item: Participant | null): number {
+    return item?.id ?? -1;
   }
-  
 }

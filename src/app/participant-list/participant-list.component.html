@@ -1,8 +1,13 @@
-<div>
-  <div class="mb-5 text-3xl font-medium">Últimos participantes ({{getParticipantsCount()}} totales)</div>
-  <div *ngFor="let participant of getParticipants()">
-    <div class="ml-6 mt-2 text-xl">
+<div class="px-2">
+  <div class="mb-3 md:mb-5 text-[clamp(1rem,2.5vw,1.875rem)] font-medium text-center md:text-left">
+    Últimos participantes
+  </div>
+  <ng-container *ngIf="history$ | async as history">
+    <div *ngFor="let participant of history" class="ml-2 md:ml-6 mt-1 md:mt-2 text-[clamp(0.875rem,1.6vw,1.25rem)] truncate">
       <app-participant [participant]="participant"></app-participant>
     </div>
-  </div>
+    <div *ngIf="history.length === 0" class="ml-2 md:ml-6 mt-1 md:mt-2 text-sm md:text-base text-gray-500 italic">
+      Sin participantes todavía.
+    </div>
+  </ng-container>
 </div>
