@@ -1,18 +1,20 @@
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
-import { Observable } from 'rxjs';
-import { AuthService } from '../auth/auth.service';
-import { AppService } from '../services/app.service';
-import { Participant } from '../participant/participant';
+import { Component, ChangeDetectionStrategy } from "@angular/core";
+import { Router } from "@angular/router";
+import { Observable } from "rxjs";
+import { AuthService } from "../auth/auth.service";
+import { AppService } from "../services/app.service";
+import { Participant } from "../participant/participant";
 
 @Component({
-  selector: 'app-main-view',
-  templateUrl: './main-view.component.html',
-  styleUrls: ['./main-view.component.css']
+  selector: "app-main-view",
+  templateUrl: "./main-view.component.html",
+  styleUrls: ["./main-view.component.css"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class MainViewComponent {
-  title = 'II Torneo Motero de Escalabirras';
-  subtitle = 'XV Concentración Motera Ría de Noia';
+  title = "II Torneo Motero de Escalabirras";
+  subtitle = "XV Concentración Motera Ría de Noia";
 
   readonly celebrating$: Observable<Participant | null>;
   readonly error$: Observable<string | null>;
@@ -22,7 +24,7 @@ export class MainViewComponent {
   constructor(
     private auth: AuthService,
     private router: Router,
-    private appService: AppService
+    private appService: AppService,
   ) {
     this.celebrating$ = this.appService.celebrating$;
     this.error$ = this.appService.error$;
@@ -42,6 +44,6 @@ export class MainViewComponent {
 
   logout(): void {
     this.auth.logout();
-    void this.router.navigate(['/login']);
+    void this.router.navigate(["/login"]);
   }
 }

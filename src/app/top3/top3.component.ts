@@ -1,12 +1,14 @@
-import { Component } from '@angular/core';
-import { Observable } from 'rxjs';
-import { Participant } from '../participant/participant';
-import { AppService } from '../services/app.service';
+import { Component, ChangeDetectionStrategy } from "@angular/core";
+import { Observable } from "rxjs";
+import { Participant } from "../participant/participant";
+import { AppService } from "../services/app.service";
 
 @Component({
-  selector: 'app-top3',
-  templateUrl: './top3.component.html',
-  styleUrls: ['./top3.component.css']
+  selector: "app-top3",
+  templateUrl: "./top3.component.html",
+  styleUrls: ["./top3.component.css"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class Top3Component {
   readonly top3$: Observable<Participant[]>;

@@ -1,21 +1,45 @@
 <div>
-  <div class="text-[clamp(1rem,2.5vw,2.25rem)] font-medium text-center">
+  <div class="text-center text-[clamp(1rem,2.5vw,2.25rem)] font-medium">
     Mayores escaladas (TOP 3)
   </div>
-  <ng-container *ngIf="top3$ | async as top3">
-    <div class="flex flex-col justify-center mt-2 md:mt-4 gap-2 md:gap-3">
-      <div class="flex items-center h-12 md:h-16 alert alert-gold text-[clamp(1rem,2.2vw,3rem)] rounded-xl md:rounded-2xl p-2 md:p-3 gap-2">
-        <img src="../../assets/first-award.png" class="-ml-6 md:-ml-10 w-12 md:w-20 flex-shrink-0" />
-        <span class="font-medium truncate">{{ (top3[0] && top3[0].crates) || 0 }} cajas - {{ (top3[0] && top3[0].name) || '- - -' | titlecase }}</span>
-      </div>
-      <div class="flex items-center h-12 md:h-16 alert alert-silver text-[clamp(1rem,2.2vw,3rem)] rounded-xl md:rounded-2xl p-2 md:p-3 gap-2">
-        <img src="../../assets/second-award.png" class="-ml-6 md:-ml-10 w-12 md:w-20 flex-shrink-0" />
-        <span class="font-medium truncate">{{ (top3[1] && top3[1].crates) || 0 }} cajas - {{ (top3[1] && top3[1].name) || '- - -' | titlecase }}</span>
-      </div>
-      <div class="flex items-center h-12 md:h-16 alert alert-bronze text-[clamp(1rem,2.2vw,3rem)] rounded-xl md:rounded-2xl p-2 md:p-3 gap-2">
-        <img src="../../assets/third-award.png" class="-ml-6 md:-ml-10 w-12 md:w-20 flex-shrink-0" />
-        <span class="font-medium truncate">{{ (top3[2] && top3[2].crates) || 0 }} cajas - {{ (top3[2] && top3[2].name) || '- - -' | titlecase }}</span>
-      </div>
+  @if (top3$ | async; as top3) {
+  <div class="mt-2 flex flex-col justify-center gap-2 md:mt-4 md:gap-3">
+    <div
+      class="alert alert-gold flex h-12 items-center gap-2 rounded-xl p-2 text-[clamp(1rem,2.2vw,3rem)] md:h-16 md:rounded-2xl md:p-3"
+    >
+      <img
+        src="../../assets/first-award.png"
+        class="-ml-6 w-12 flex-shrink-0 md:-ml-10 md:w-20"
+      />
+      <span class="truncate font-medium"
+        >{{ (top3[0] && top3[0].crates) || 0 }} cajas -
+        {{ (top3[0] && top3[0].name) || "- - -" | titlecase }}</span
+      >
     </div>
-  </ng-container>
+    <div
+      class="alert alert-silver flex h-12 items-center gap-2 rounded-xl p-2 text-[clamp(1rem,2.2vw,3rem)] md:h-16 md:rounded-2xl md:p-3"
+    >
+      <img
+        src="../../assets/second-award.png"
+        class="-ml-6 w-12 flex-shrink-0 md:-ml-10 md:w-20"
+      />
+      <span class="truncate font-medium"
+        >{{ (top3[1] && top3[1].crates) || 0 }} cajas -
+        {{ (top3[1] && top3[1].name) || "- - -" | titlecase }}</span
+      >
+    </div>
+    <div
+      class="alert alert-bronze flex h-12 items-center gap-2 rounded-xl p-2 text-[clamp(1rem,2.2vw,3rem)] md:h-16 md:rounded-2xl md:p-3"
+    >
+      <img
+        src="../../assets/third-award.png"
+        class="-ml-6 w-12 flex-shrink-0 md:-ml-10 md:w-20"
+      />
+      <span class="truncate font-medium"
+        >{{ (top3[2] && top3[2].crates) || 0 }} cajas -
+        {{ (top3[2] && top3[2].name) || "- - -" | titlecase }}</span
+      >
+    </div>
+  </div>
+  }
 </div>

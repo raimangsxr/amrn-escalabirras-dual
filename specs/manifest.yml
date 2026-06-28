@@ -12,7 +12,7 @@ contracts:
   - id: frontend-angular
     path: specs/contracts/frontend-angular/contract.md
     status: active
-    description: Angular 16 frontend contract. Login + embed-token flow added by 004-auth-and-embed-tokens. Responsive iframe sizing added by 005-responsive-iframe.
+    description: Angular 22 frontend contract. Login + embed-token flow added by 004-auth-and-embed-tokens. Responsive iframe sizing added by 005-responsive-iframe. Framework bumps added by 007-angular-20-migration and 008-angular-22-migration.
   - id: auth
     path: specs/contracts/auth/contract.md
     status: active
@@ -49,8 +49,18 @@ changes:
     status: active
     contract: api-rest
     description: Production-readiness pass: Dockerfiles, production docker-compose, production security headers, frontend build-time env replacement, PRODUCTION.md checklist.
+  - id: 007-angular-20-migration
+    path: specs/changes/007-angular-20-migration/
+    status: superseded
+    contract: frontend-angular
+    description: Bump the Angular frontend from v16 to v20. Keeps NgModules, RxJS, zone.js, and Karma/Jasmine. Superseded by 008-angular-22-migration.
+  - id: 008-angular-22-migration
+    path: specs/changes/008-angular-22-migration/
+    status: active
+    contract: frontend-angular
+    description: Bump the Angular frontend from v20 to v22 (22.0.4). Installs Node 24 LTS via Homebrew to meet v22's minimum Node version. Keeps NgModules, RxJS, zone.js, and Karma/Jasmine.
 
 active:
-  change: specs/changes/006-production-readiness/
-  contract: specs/contracts/api-rest/contract.md
-  context_pack: specs/changes/006-production-readiness/context-pack.md
+  change: specs/changes/008-angular-22-migration/
+  contract: specs/contracts/frontend-angular/contract.md
+  context_pack: specs/changes/008-angular-22-migration/context-pack.md

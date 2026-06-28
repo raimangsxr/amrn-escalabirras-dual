@@ -1,10 +1,12 @@
-import { Component, Input } from '@angular/core';
-import { Participant } from '../participant/participant';
+import { Component, Input, ChangeDetectionStrategy } from "@angular/core";
+import { Participant } from "../participant/participant";
 
 @Component({
-  selector: 'app-winner',
-  templateUrl: './winner.component.html',
-  styleUrls: ['./winner.component.css']
+  selector: "app-winner",
+  templateUrl: "./winner.component.html",
+  styleUrls: ["./winner.component.css"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class WinnerComponent {
   @Input() participant: Participant | null = null;

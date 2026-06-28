@@ -2,11 +2,14 @@
 
 ## Purpose
 
-Describe the Angular 16 frontend after the migration from
+Describe the Angular 22 frontend after the migration from
 `localStorage` to the FastAPI backend introduced in change
-`002-backend-foundation`, and after the addition of operator login +
-embed-token bypass introduced by change `004-auth-and-embed-tokens`.
-The frontend lives under `src/`. It is the primary consumer of
+`002-backend-foundation`, after the addition of operator login +
+embed-token bypass introduced by change `004-auth-and-embed-tokens`,
+after the framework-version bump to v20 introduced by change
+`007-angular-20-migration`, and after the framework-version bump to
+v22 introduced by change `008-angular-22-migration`. The frontend
+lives under `src/`. It is the primary consumer of
 `specs/contracts/api-rest/contract.md`,
 `specs/contracts/persistence-postgres/contract.md`, and
 `specs/contracts/auth/contract.md`.
@@ -17,7 +20,7 @@ which describes the `localStorage`-backed version and is moved to
 
 ## Current Behavior
 
-The frontend is a Spanish-language Angular 16 SPA that drives the
+The frontend is a Spanish-language Angular 22 SPA that drives the
 escalabirras tournament. On first load the app asks the operator
 for the password configured at the backend (`ADMIN_PASSWORD`); once
 authenticated it behaves as in `003`. If the app is embedded in an
@@ -210,7 +213,7 @@ instead; the team input shows `'- - -'` when the slot is `null`.
 | Script | Command | Notes |
 | --- | --- | --- |
 | `npm start` | `ng serve` | Local dev server on `http://localhost:4200`. |
-| `npm run build` | `ng build` | Production build (Angular 16 budgets apply). |
+| `npm run build` | `ng build` | Production build (Angular 22 budgets apply). |
 | `npm run watch` | `ng build --watch --configuration development` | Rebuild on change, dev mode. |
 | `npm test` | `ng test` | Karma + Jasmine. No specs added in `003`. |
 
@@ -274,6 +277,12 @@ The legacy `finishGame`, `addParticipantToGame`, `saveParticipant`,
   FastAPI backend (e.g. `https://api.example.com/v1`).
 - The `apiBaseUrl` is read by `AppService` at construction time and
   passed to every `HttpClient` call.
+- The Material theme is the prebuilt
+  `@angular/material/prebuilt-themes/indigo-pink.css`, imported via
+  `angular.json`'s `styles` array. Material 22 still ships the file
+  but logs a deprecation; a future change can migrate to the M3
+  `mat.theme` mixin. The framework version is Angular 22, built
+  through `@angular/build:application`.
 
 ### HTTP error mapping
 
@@ -334,7 +343,7 @@ has keyboard focus. There is still no visual cue for that focus.
 
 ## Non-functional characteristics
 
-- **Browser support.** Same Angular 16 default as `app-core`. The
+- **Browser support.** Same Angular 22 default as `app-core`. The
   app now also requires `fetch` / `XMLHttpRequest` to reach the
   backend; the dev assumption is `localhost`.
 - **Performance.** Top 3 and history re-fetch from the backend after
@@ -425,8 +434,9 @@ unreadable text.
   typecheck accepts the `js-confetti` default import. The
   previously-documented `TS1259` should no longer appear.
 - **Angular build succeeds.** Both `ng build --configuration
-  development` and `--configuration production` produce a bundle.
-  The hardcoded WSL `outputPath` is still in `angular.json`; use
+  development` and `--configuration production` produce a bundle
+  through the `@angular/build:application` builder. The hardcoded
+  WSL `outputPath` is still in `angular.json`; use
   `--output-path /tmp/...` to override.
 - **End-to-end smoke.** With the backend running (SQLite is fine for
   a quick check) and `npm start` on the frontend, the operator can:

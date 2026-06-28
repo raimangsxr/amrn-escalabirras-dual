@@ -1,16 +1,23 @@
-import { Component, EventEmitter, Output } from "@angular/core";
-import { Participant } from '../participant/participant';
-import { AppService } from '../services/app.service';
+import {
+  Component,
+  EventEmitter,
+  Output,
+  ChangeDetectionStrategy,
+} from "@angular/core";
+import { Participant } from "../participant/participant";
+import { AppService } from "../services/app.service";
 
 @Component({
   selector: "app-team-manager-blue",
   templateUrl: "./team-manager-blue.component.html",
-  styleUrls: ["./team-manager-blue.component.css"]
+  styleUrls: ["./team-manager-blue.component.css"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class TeamManagerBlueComponent {
   @Output() newParticipantEvent = new EventEmitter<string>();
 
-  name: string = '';
+  name: string = "";
 
   constructor(private appService: AppService) {}
 
@@ -22,7 +29,7 @@ export class TeamManagerBlueComponent {
       return;
     }
     this.newParticipantEvent.emit(trimmed);
-    this.name = '';
+    this.name = "";
   }
 
   trackById(_index: number, item: Participant | null): number {

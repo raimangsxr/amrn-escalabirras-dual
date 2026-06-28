@@ -1,13 +1,20 @@
-import { Component, ElementRef, ViewChild } from "@angular/core";
-import { AppService } from '../services/app.service';
+import {
+  Component,
+  ElementRef,
+  ViewChild,
+  ChangeDetectionStrategy,
+} from "@angular/core";
+import { AppService } from "../services/app.service";
 
 @Component({
-  selector: 'app-manager',
-  templateUrl: './manager.component.html',
-  styleUrls: ['./manager.component.css']
+  selector: "app-manager",
+  templateUrl: "./manager.component.html",
+  styleUrls: ["./manager.component.css"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ManagerComponent {
-  @ViewChild('fin', {static: true}) finField!: ElementRef;
+  @ViewChild("fin", { static: true }) finField!: ElementRef;
 
   constructor(private appService: AppService) {}
 

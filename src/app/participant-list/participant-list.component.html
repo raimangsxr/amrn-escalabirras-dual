@@ -1,13 +1,21 @@
 <div class="px-2">
-  <div class="mb-3 md:mb-5 text-[clamp(1rem,2.5vw,1.875rem)] font-medium text-center md:text-left">
+  <div
+    class="mb-3 text-center text-[clamp(1rem,2.5vw,1.875rem)] font-medium md:mb-5 md:text-left"
+  >
     Últimos participantes
   </div>
-  <ng-container *ngIf="history$ | async as history">
-    <div *ngFor="let participant of history" class="ml-2 md:ml-6 mt-1 md:mt-2 text-[clamp(0.875rem,1.6vw,1.25rem)] truncate">
-      <app-participant [participant]="participant"></app-participant>
-    </div>
-    <div *ngIf="history.length === 0" class="ml-2 md:ml-6 mt-1 md:mt-2 text-sm md:text-base text-gray-500 italic">
-      Sin participantes todavía.
-    </div>
-  </ng-container>
+  @if (history$ | async; as history) { @for (participant of history; track
+  participant) {
+  <div
+    class="ml-2 mt-1 truncate text-[clamp(0.875rem,1.6vw,1.25rem)] md:ml-6 md:mt-2"
+  >
+    <app-participant [participant]="participant"></app-participant>
+  </div>
+  } @if (history.length === 0) {
+  <div
+    class="ml-2 mt-1 text-sm italic text-gray-500 md:ml-6 md:mt-2 md:text-base"
+  >
+    Sin participantes todavía.
+  </div>
+  } }
 </div>
