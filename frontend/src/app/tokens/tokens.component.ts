@@ -1,9 +1,7 @@
 import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import {
   Component,
-  EventEmitter,
   OnInit,
-  Output,
   ChangeDetectionStrategy,
 } from "@angular/core";
 import { Observable, Subject } from "rxjs";
@@ -37,8 +35,6 @@ interface ListResponse {
   standalone: false,
 })
 export class TokensComponent implements OnInit {
-  @Output() closeRequested = new EventEmitter<void>();
-
   newName = "";
   newToken: string | null = null;
   errorMessage: string | null = null;
@@ -59,10 +55,6 @@ export class TokensComponent implements OnInit {
       next: (list) => (this.list = list),
       error: (err: Error) => (this.errorMessage = err.message),
     });
-  }
-
-  close(): void {
-    this.closeRequested.emit();
   }
 
   create(): void {
@@ -124,7 +116,6 @@ export class TokensComponent implements OnInit {
       });
       return;
     }
-    // Fallback: select the code element so the operator can copy manually.
     const selection = window.getSelection();
     if (!selection) {
       this.errorMessage = "No se pudo copiar. Selecciona el texto manualmente.";

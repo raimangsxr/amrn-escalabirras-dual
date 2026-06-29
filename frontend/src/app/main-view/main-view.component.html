@@ -29,14 +29,14 @@
           <span
             class="rounded bg-gradient-to-r from-indigo-600 to-pink-500 box-decoration-slice px-3 py-1 text-white"
           >
-            {{ title }}
+            {{ (event$ | async)?.title ?? "" }}
           </span>
         </div>
         <div class="mt-1 text-[clamp(1rem,3vw,2.25rem)] font-extrabold">
           <span
             class="rounded bg-gradient-to-r from-pink-500 to-indigo-600 box-decoration-slice px-2 text-white"
           >
-            {{ subtitle }}
+            {{ (event$ | async)?.subtitle ?? "" }}
           </span>
         </div>
       </div>
@@ -61,26 +61,6 @@
     <div class="flex-shrink-0">
       <app-manager></app-manager>
     </div>
-    <div
-      class="mt-4 flex flex-shrink-0 flex-col justify-end gap-2 px-4 pb-4 sm:flex-row"
-    >
-      <button
-        type="button"
-        class="rounded bg-indigo-600 px-4 py-2 font-bold text-white hover:bg-indigo-700"
-        (click)="openTokens()"
-      >
-        Tokens
-      </button>
-      <button
-        type="button"
-        class="rounded bg-gray-600 px-4 py-2 font-bold text-white hover:bg-gray-700"
-        (click)="logout()"
-      >
-        Salir
-      </button>
-    </div>
   </div>
-  } @if (showTokens) {
-  <app-tokens (closeRequested)="closeTokens()"></app-tokens>
   }
 </div>

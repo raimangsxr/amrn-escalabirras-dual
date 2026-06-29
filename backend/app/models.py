@@ -57,3 +57,27 @@ class EmbedToken(Base):
 
     def __repr__(self) -> str:
         return f"EmbedToken(id={self.id!r}, name={self.name!r}, revoked={self.revoked_at is not None})"
+
+
+class Event(Base):
+    """Tournament display info edited by the operator from ``/admin``.
+
+    Logically a singleton: there is exactly one row (``id = 1``) in
+    normal operation. The synthetic PK leaves room for a future
+    multi-event schema. See
+    ``specs/contracts/persistence-postgres/contract.md``.
+    """
+
+    __tablename__ = "event"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    title: Mapped[str] = mapped_column(String(80), nullable=False)
+    subtitle: Mapped[str] = mapped_column(String(80), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+    )
+
+    def __repr__(self) -> str:
+        return f"Event(id={self.id!r}, title={self.title!r})"

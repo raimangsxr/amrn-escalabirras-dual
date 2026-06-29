@@ -15,6 +15,7 @@ from app.errors import ApiError
 from app.middleware.frame_ancestors import FrameAncestorsMiddleware
 from app.middleware.security_headers import SecurityHeadersMiddleware
 from app.routers import auth as auth_router
+from app.routers import event as event_router
 from app.routers import leaderboard, participants, tokens as tokens_router
 from app.schemas import ErrorBody, HealthResponse
 
@@ -62,12 +63,26 @@ async def validation_exception_handler(
     request: Request, exc: RequestValidationError
 ) -> JSONResponse:
     errors = exc.errors()
+    path = request.url.path.rstrip("/")
     is_participant_name = (
-        request.url.path.rstrip("/").endswith("/v1/participants")
+        path.endswith("/v1/participants")
         and any(err.get("loc", ())[:2] == ("body", "name") for err in errors)
     )
     if is_participant_name:
         return _build_error(422, "invalid_name", "name must be 1-20 characters")
+    is_event_update = (
+        path.endswith("/v1/event")
+        and any(
+            err.get("loc", ())[:2] in (("body", "title"), ("body", "subtitle"))
+            for err in errors
+        )
+    )
+    if is_event_update:
+        return _build_error(
+            422,
+            "invalid_event",
+            "title and subtitle must be 1-80 characters",
+        )
     return _build_error(422, "validation_error", "request validation failed")
 
 
@@ -84,6 +99,7 @@ def _default_code_for_status(status_code: int) -> str:
 
 app.include_router(auth_router.router)
 app.include_router(tokens_router.router)
+app.include_router(event_router.router)
 app.include_router(participants.router)
 app.include_router(leaderboard.router)
 

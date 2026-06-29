@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: escalabirras-api-config
+data:
+  DATABASE_URL: "postgresql+psycopg://escalabirras:__DB_PASS__@db-host:5432/escalabirras"
+  CORS_ORIGINS: "https://app.example.com"
+  FRAME_ANCESTORS: "https://parent.example.com"
+  JWT_TTL_SECONDS: "86400"
+  API_WORKERS: "2"
+  API_LOG_LEVEL: "warning"

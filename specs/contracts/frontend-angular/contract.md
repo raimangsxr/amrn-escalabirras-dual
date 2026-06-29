@@ -7,9 +7,12 @@ Describe the Angular 22 frontend after the migration from
 `002-backend-foundation`, after the addition of operator login +
 embed-token bypass introduced by change `004-auth-and-embed-tokens`,
 after the framework-version bump to v20 introduced by change
-`007-angular-20-migration`, and after the framework-version bump to
-v22 introduced by change `008-angular-22-migration`. The frontend
-lives under `src/`. It is the primary consumer of
+`007-angular-20-migration`, after the framework-version bump to
+v22 introduced by change `008-angular-22-migration`, and after
+the operator-only configuration (event info, tokens, logout)
+was moved to the `/admin` route introduced by change
+`009-admin-event-config`. The frontend lives under `src/`. It is
+the primary consumer of
 `specs/contracts/api-rest/contract.md`,
 `specs/contracts/persistence-postgres/contract.md`, and
 `specs/contracts/auth/contract.md`.
@@ -40,10 +43,13 @@ the tab ends the session.
 
 ## Reactive state model
 
-Two services own frontend state. `AuthService` (under
+Three services own frontend state. `AuthService` (under
 `src/app/auth/auth.service.ts`) owns the operator session.
 `AppService` (under `src/app/services/app.service.ts`) owns
-tournament state. Both expose RxJS streams backed by
+tournament state. `EventService` (under
+`src/app/services/event.service.ts`) owns the singleton event
+info (title, subtitle) and is the only writer/reader of
+`/v1/event`. All three expose RxJS streams backed by
 `BehaviorSubject`s.
 
 ### `AuthService`
@@ -57,6 +63,20 @@ tournament state. Both expose RxJS streams backed by
 | `logout()` | `void` | Clears `sessionStorage` and the `session$` subject. |
 | `exchangeEmbedToken(token)` | `Observable<Session>` | `POST /v1/auth/embed-token`. |
 | `getToken()` | `string \| null` | Synchronous accessor used by the HTTP interceptor. |
+
+### `EventService`
+
+Introduced by change `009-admin-event-config`. Owns the singleton
+event info (`title`, `subtitle`) the operator configures from
+`/admin` and that `MainViewComponent` renders in its header.
+There is at most one row on the backend, so the service holds a
+single `event$` stream rather than a collection.
+
+| Member | Type | Notes |
+| --- | --- | --- |
+| `event$` | `Observable<Event \| null>` | `null` until the first `bootstrap()` resolves. `Event = { id: 1, title: string, subtitle: string, updated_at: string }`. |
+| `bootstrap()` | `Promise<void>` | `GET /v1/event`. Called once at app startup. Sets `event$` to the response, or to `null` on `404`. Other errors propagate and are not retried automatically. |
+| `update(title, subtitle)` | `Observable<Event>` | `PUT /v1/event` with the trimmed values. On 2xx, updates `event$` and returns the response. |
 
 Sessions live in `sessionStorage` under the key
 `escalabirras.session` so they are scoped to the tab. Closing the
@@ -192,19 +212,33 @@ instead; the team input shows `'- - -'` when the slot is `null`.
    button. Dismissing sets `error$` back to `null`. Successful HTTP
    calls also clear `error$`.
 
-10. **Manage embed tokens.** From `MainViewComponent`, click
-    "Tokens" → `TokensComponent` opens. It shows the list of embed
-    tokens (id, name, created_at, last_used_at, revoked_at). The
-    "Crear token" button asks for a name; on success the plaintext
-    `embed_…` is shown exactly once with a "Copiar" button and an
-    inline warning that the value will not be displayed again.
-    "Revocar" soft-deletes the row.
+10. **Manage embed tokens.** Introduced by change
+    `009-admin-event-config`. The `TokensComponent` is hosted
+    inside `AdminComponent` at `/admin`, not inside
+    `MainViewComponent`. The operator navigates to `/admin`
+    directly (bookmark, separate tab, manual URL); there is no
+    button or link from `/` to `/admin`. From `/admin` the same
+    UI is available: list of embed tokens (id, name, created_at,
+    last_used_at, revoked_at), a "Crear token" input that asks
+    for a name, an "Revocar" button per row, and the same
+    copy-once UX for the plaintext token.
 
-11. **Log out.** From `MainViewComponent`, click "Salir" →
+11. **Edit event info.** From `/admin`, the "Info del evento"
+    section shows two text inputs (title, subtitle) bound to
+    `EventService.event$`. "Guardar" calls
+    `EventService.update(title, subtitle)` which `PUT /v1/event`s
+    the trimmed values. On success the inputs keep the new
+    values and a transient confirmation appears. On `422
+    invalid_event` the inputs are not changed and the error
+    banner surfaces the message.
+
+12. **Log out.** From `/admin`, click "Salir" →
     `AuthService.logout()`. `sessionStorage` is cleared, `session$`
     is set to `null`, the router navigates to `/login`. The backend
     `/v1/auth/logout` is called as a courtesy but is a no-op server-
-    side.
+    side. The main view at `/` does **not** expose a Salir button;
+    logging out requires visiting `/admin` (or waiting for the JWT
+    to expire / closing the tab).
 
 ## APIs / Interfaces
 
@@ -244,6 +278,14 @@ instead; the team input shows `'- - -'` when the slot is `null`.
 | `exchangeEmbedToken(token: string)` | `Observable<Session>` | `POST /v1/auth/embed-token`. |
 | `getToken()` | `string \| null` | Synchronous accessor used by the HTTP interceptor. |
 
+### Public service surface (`EventService`)
+
+| Member | Type | Notes |
+| --- | --- | --- |
+| `event$` | `Observable<Event \| null>` | `null` until first `bootstrap()` resolves. |
+| `bootstrap()` | `Promise<void>` | `GET /v1/event`. |
+| `update(title: string, subtitle: string)` | `Observable<Event>` | `PUT /v1/event`; updates `event$` on success. |
+
 ### Routing
 
 `AppRoutingModule` defines:
@@ -252,6 +294,7 @@ instead; the team input shows `'- - -'` when the slot is `null`.
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: '', component: MainViewComponent, canActivate: [authGuard] },
+  { path: 'admin', component: AdminComponent, canActivate: [authGuard] },
   { path: '**', redirectTo: '' },
 ];
 ```
@@ -259,6 +302,15 @@ const routes: Routes = [
 `authGuard` is a `CanActivateFn` that returns `true` when
 `AuthService.isAuthenticated$` is `true`, otherwise redirects to
 `/login`.
+
+The `/admin` route was introduced by `009-admin-event-config`.
+It uses the same `authGuard` as `/`; there is no separate "admin
+guard" and there is no role distinction (a single operator is
+the only authenticated principal in v1). The `MainViewComponent`
+template at `/` contains **no** navigation affordance to
+`/admin` — no `routerLink`, no button, no anchor. The operator
+reaches `/admin` by typing the URL in the address bar or by
+using a bookmark.
 
 The legacy `finishGame`, `addParticipantToGame`, `saveParticipant`,
 `saveWinnerParticipant`, `setNewRecord`, `getNewRecord`,
@@ -403,15 +455,26 @@ values so they scale with the iframe width while staying legible:
 
 ### What the operator MUST be able to do in any size
 
+In `/` (the public tournament view):
+
 - Read the current participant name and crate count for each team.
 - See the Top 3.
 - See the last 10 participants.
 - Click the "Focus para jugar" button (always visible; not hidden
   on small sizes).
 - Press the keyboard shortcuts (`a/z/s/x/q/w`).
-- Open the Tokens modal.
-- Log out.
 - See the celebration overlay without text overflow.
+
+In `/admin` (operator only, separate route):
+
+- Read and edit the event title and subtitle; the inputs must
+  remain usable at every layout bucket.
+- Manage embed tokens (list / create / revoke) with the same
+  controls the modal used to have.
+- Log out.
+
+The Tokens modal and the Salir button are no longer rendered by
+`MainViewComponent`; both moved to `/admin`.
 
 ### Manual test
 

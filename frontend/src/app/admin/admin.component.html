@@ -1,0 +1,95 @@
+<div class="flex h-full min-h-0 flex-col">
+  <header
+    class="flex flex-shrink-0 items-center justify-between gap-2 border-b border-gray-200 bg-gray-50 px-4 py-3 md:px-6"
+  >
+    <h1
+      class="text-[clamp(1.25rem,3vw,2rem)] font-bold text-gray-800"
+    >
+      Administración
+    </h1>
+    <button
+      type="button"
+      class="rounded bg-gray-600 px-4 py-2 text-sm font-bold text-white hover:bg-gray-700 md:text-base"
+      (click)="logout()"
+    >
+      Salir
+    </button>
+  </header>
+
+  <div class="flex-1 overflow-y-auto px-4 py-4 md:px-6 md:py-6">
+    <div class="mx-auto flex max-w-3xl flex-col gap-6">
+      <section
+        class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm md:p-6"
+        aria-labelledby="admin-event-heading"
+      >
+        <h2
+          id="admin-event-heading"
+          class="mb-3 text-lg font-semibold text-gray-800 md:text-xl"
+        >
+          Info del evento
+        </h2>
+        <p class="mb-4 text-xs text-gray-600 md:text-sm">
+          Título y subtítulo que se muestran en la cabecera de la página
+          principal.
+        </p>
+
+        <div class="flex flex-col gap-3">
+          <label class="flex flex-col gap-1 text-sm md:text-base">
+            <span class="font-medium text-gray-700">Título</span>
+            <input
+              type="text"
+              maxlength="80"
+              [(ngModel)]="title"
+              [disabled]="busy"
+              class="rounded border-2 border-gray-300 p-2 text-sm md:text-base"
+              placeholder="II Torneo Motero de Escalabirras"
+            />
+          </label>
+          <label class="flex flex-col gap-1 text-sm md:text-base">
+            <span class="font-medium text-gray-700">Subtítulo</span>
+            <input
+              type="text"
+              maxlength="80"
+              [(ngModel)]="subtitle"
+              [disabled]="busy"
+              class="rounded border-2 border-gray-300 p-2 text-sm md:text-base"
+              placeholder="XV Concentración Motera Ría de Noia"
+            />
+          </label>
+
+          <div class="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              class="rounded bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700 disabled:opacity-50 md:text-base"
+              [disabled]="!canSave()"
+              (click)="save()"
+            >
+              Guardar
+            </button>
+            @if (saved) {
+            <span class="text-sm text-green-700">Guardado.</span>
+            }
+            @if (errorMessage) {
+            <span class="text-sm text-red-700" role="alert">
+              {{ errorMessage }}
+            </span>
+            }
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm md:p-6"
+        aria-labelledby="admin-tokens-heading"
+      >
+        <h2
+          id="admin-tokens-heading"
+          class="mb-3 text-lg font-semibold text-gray-800 md:text-xl"
+        >
+          Tokens de embed
+        </h2>
+        <app-tokens></app-tokens>
+      </section>
+    </div>
+  </div>
+</div>

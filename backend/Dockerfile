@@ -1,11 +1,11 @@
 # syntax=docker/dockerfile:1.6
 #
 # Multi-stage build for the escalabirras FastAPI backend.
-#   - Builder: install pip-tools, materialize requirements.txt, build the
-#     wheel.
+#   - Builder: build the wheel from pyproject.toml.
 #   - Runtime: slim image with the wheel installed, a non-root user,
-#     and start.sh as entrypoint. Exposes 8000 and HEALTHCHECK against
-#     /healthz.
+#     and uvicorn as CMD. Exposes 8000 and HEALTHCHECK against /healthz.
+#     Migrations (alembic upgrade head) are run out-of-band in K8s
+#     (a separate Job), not by the image entrypoint.
 
 ARG PYTHON_VERSION=3.12-slim
 
@@ -45,11 +45,9 @@ COPY pyproject.toml ./
 COPY app ./app
 COPY alembic ./alembic
 COPY alembic.ini ./
-COPY start.sh /app/start.sh
 
 RUN pip install --no-index --find-links=/wheels escalabirras-backend \
     && pip install alembic \
-    && chmod +x /app/start.sh \
     && chown -R app:app /app
 
 USER app
@@ -58,4 +56,4 @@ EXPOSE 8000
 HEALTHCHECK --interval=15s --timeout=5s --start-period=15s --retries=3 \
     CMD curl --fail --silent http://127.0.0.1:8000/healthz || exit 1
 
-ENTRYPOINT ["/app/start.sh"]
+CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers ${API_WORKERS:-2} --log-level ${API_LOG_LEVEL:-info} --proxy-headers --forwarded-allow-ips='*'"]

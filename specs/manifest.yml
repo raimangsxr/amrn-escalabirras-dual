@@ -59,8 +59,13 @@ changes:
     status: active
     contract: frontend-angular
     description: Bump the Angular frontend from v20 to v22 (22.0.4). Installs Node 24 LTS via Homebrew to meet v22's minimum Node version. Keeps NgModules, RxJS, zone.js, and Karma/Jasmine.
+  - id: 009-admin-event-config
+    path: specs/changes/009-admin-event-config/
+    status: active
+    contract: frontend-angular
+    description: Move operator-only configuration (event info, embed tokens, logout) to a new /admin route. Add /v1/event endpoints and an event singleton table. Remove Tokens/Salir buttons and any navigation to /admin from the main view.
 
 active:
-  change: specs/changes/008-angular-22-migration/
+  change: specs/changes/009-admin-event-config/
   contract: specs/contracts/frontend-angular/contract.md
-  context_pack: specs/changes/008-angular-22-migration/context-pack.md
+  context_pack: specs/changes/009-admin-event-config/context-pack.md
