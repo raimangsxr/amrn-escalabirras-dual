@@ -8,11 +8,13 @@ Describe the Angular 22 frontend after the migration from
 embed-token bypass introduced by change `004-auth-and-embed-tokens`,
 after the framework-version bump to v20 introduced by change
 `007-angular-20-migration`, after the framework-version bump to
-v22 introduced by change `008-angular-22-migration`, and after
-the operator-only configuration (event info, tokens, logout)
-was moved to the `/admin` route introduced by change
-`009-admin-event-config`. The frontend lives under `src/`. It is
-the primary consumer of
+v22 introduced by change `008-angular-22-migration`, after the
+operator-only configuration (event info, tokens, logout) was
+moved to the `/admin` route introduced by change
+`009-admin-event-config`, and after the two-dimensional
+(width × height) responsive layout scheme was introduced by
+change `010-responsive-iframe-height`. The frontend lives under
+`src/`. It is the primary consumer of
 `specs/contracts/api-rest/contract.md`,
 `specs/contracts/persistence-postgres/contract.md`, and
 `specs/contracts/auth/contract.md`.
@@ -409,28 +411,48 @@ has keyboard focus. There is still no visual cue for that focus.
 
 ## Responsive / iframe sizing
 
-Introduced by change `005-responsive-iframe`.
+Introduced by change `005-responsive-iframe`. The two-dimensional
+(width × height) bucket scheme introduced by change
+`010-responsive-iframe-height` supersedes the width-only scheme
+from `005`. The service still observes the iframe size via a
+`ResizeObserver` on `document.body` and applies the resulting
+class to `<html>`. The set of emitted classes is now the cartesian
+product of width and height buckets, not a single axis.
 
 The application must look correct and remain fully usable when
 embedded in an iframe at any reasonable aspect ratio (portrait,
-landscape, square, very small widgets, full-screen takeover).
+landscape, square, very small widgets, full-screen takeover),
+including both axes at once.
 
 ### Layout service
 
 `src/app/services/layout.service.ts` exposes a single
-`layoutClass$: Observable<string>` that emits one of:
+`layoutClass$: Observable<string>` that emits one of nine
+combined buckets:
 
-| Class | Width | Notes |
-| --- | --- | --- |
-| `layout-compact` | `< 480px` | Phone-like widgets, sidebars. Single column. |
-| `layout-narrow` | `480–767px` | Tablet portrait, narrow desktop embeds. |
-| `layout-wide` | `>= 768px` | Desktop, landscape, full-screen embeds. |
+| Class | Width | Height | Typical use |
+| --- | --- | --- | --- |
+| `layout-compact-short` | `< 480px` | `< 384px` | Tiny sidebar widget. |
+| `layout-compact-medium` | `< 480px` | `384–575px` | Cramped phone-portrait. |
+| `layout-compact-tall` | `< 480px` | `>= 576px` | Phone-portrait, narrow. |
+| `layout-narrow-short` | `480–767px` | `< 384px` | Landscape widget. |
+| `layout-narrow-medium` | `480–767px` | `384–575px` | Tablet-portrait, small. |
+| `layout-narrow-tall` | `480–767px` | `>= 576px` | Tablet-portrait, comfortable. |
+| `layout-wide-short` | `>= 768px` | `< 384px` | Landscape projector strip. |
+| `layout-wide-medium` | `>= 768px` | `384–575px` | Landscape small desktop. |
+| `layout-wide-tall` | `>= 768px` | `>= 576px` | Full-screen, default. |
 
-The service uses a `ResizeObserver` on `document.body` and applies
-the class to `<html>`. Components read the class via Angular
-`@HostBinding` (root component) and via Tailwind variants like
-`md:flex-row` for breakpoint-based layout, plus fluid `clamp()`
-sizes for type.
+Width thresholds (`480`, `768`) match the v1 layout (introduced by
+`005-responsive-iframe`). Height thresholds (`384`, `576`) are
+intentionally lower because the deployed iframes are often shorter
+than they are wide; the chosen values keep the three buckets
+balanced for the embedding scenarios documented in `004`.
+
+`document.documentElement` always carries exactly one of these
+nine classes and the value is mirrored to
+`document.documentElement.dataset.layout` for tests / debugging.
+The class is also exposed through `layoutClass$` so Angular
+components can subscribe if needed.
 
 ### Fluid type
 
@@ -443,15 +465,34 @@ values so they scale with the iframe width while staying legible:
 
 ### Layout shifts
 
-| Component | Wide (`>= 768`) | Compact (`< 480`) |
+The height dimension adds two extra rules on top of the width
+buckets introduced by `005`:
+
+- In any `*-short` bucket (`< 384px` tall), the header collapses
+  to a single line (logo hidden, title and subtitle only, smaller
+  fluid type), the Top 3 list is hidden so the team panels can
+  occupy the vertical space, and the celebration overlay shrinks
+  every line of text and removes its vertical margins.
+- In any `*-tall` bucket (`>= 576px` tall), the regular layout
+  described below is restored.
+- The `*-medium` bucket is the intermediate band; it inherits the
+  regular layout, with slightly tighter fluid-type clamps so the
+  content fits.
+
+| Component | `*-tall` (`>= 576px` tall) | `*-short` (`< 384px` tall) |
 | --- | --- | --- |
-| Header (logo + title) | Side-by-side | Stacked, smaller logo |
-| Top 3 + manager | Two columns (logo + top3, manager below) | Stacked |
-| Manager columns | 3 columns (history, red, blue) | 1 column (history, red, blue) |
-| Team panel name + counter | Large | Same, fluid |
-| Celebration overlay | `h-full`, fluid text | `h-full`, fluid text |
-| Login form | Centered card, `w-96` | Centered card, `w-full max-w-sm mx-4` |
+| Header (logo + title) | Logo + title side-by-side (or stacked on `*-compact`) | Logo hidden, title + subtitle only |
+| Top 3 list | Visible | Hidden |
+| Manager columns | `flex-row` on `*-wide`/`*-narrow`; `flex-col` on `*-compact` | `flex-col` with reduced padding |
+| Team panel name + counter | Fluid type per the v1 scale | Smaller fluid type |
+| Celebration overlay | `h-full`, fluid text, normal margins | `h-full`, fluid text, no `mt-*` |
+| Login form | `w-full max-w-sm mx-4` (or `w-96` on `*-wide-tall`) | `w-full max-w-sm mx-2` |
 | Tokens modal | `max-w-2xl`, `max-h-[90%]` | `max-w-full`, `max-h-full` |
+
+The width shifts inherited from `005` (header stacking on
+`*-compact`, manager columns stacking on `*-compact`, login form
+full-width on `*-compact`/`*-narrow`) continue to apply on top of
+the height shifts above.
 
 ### What the operator MUST be able to do in any size
 
@@ -479,13 +520,29 @@ The Tokens modal and the Salir button are no longer rendered by
 ### Manual test
 
 ```html
+<!-- Wide x Short (landscape widget) — layout-wide-short -->
+<iframe src="https://app.example.com/?embed_token=..." width="800" height="200"></iframe>
+<!-- Compact x Tall (phone-portrait) — layout-compact-tall -->
+<iframe src="https://app.example.com/?embed_token=..." width="320" height="640"></iframe>
+<!-- Compact x Short (tiny sidebar) — layout-compact-short -->
 <iframe src="https://app.example.com/?embed_token=..." width="300" height="200"></iframe>
-<iframe src="https://app.example.com/?embed_token=..." width="768" height="1024"></iframe>
+<!-- Narrow x Tall (tablet-portrait) — layout-narrow-tall -->
+<iframe src="https://app.example.com/?embed_token=..." width="600" height="900"></iframe>
+<!-- Narrow x Medium (small embed) — layout-narrow-medium -->
+<iframe src="https://app.example.com/?embed_token=..." width="600" height="450"></iframe>
+<!-- Wide x Tall (default full-screen) — layout-wide-tall -->
 <iframe src="https://app.example.com/?embed_token=..." width="1920" height="1080"></iframe>
+<!-- Wide x Medium (landscape small) — layout-wide-medium -->
+<iframe src="https://app.example.com/?embed_token=..." width="1024" height="500"></iframe>
+<!-- Narrow x Short (rare, narrow landscape) — layout-narrow-short -->
+<iframe src="https://app.example.com/?embed_token=..." width="700" height="200"></iframe>
+<!-- Compact x Medium (rare, cramped square) — layout-compact-medium -->
+<iframe src="https://app.example.com/?embed_token=..." width="420" height="420"></iframe>
 ```
 
-Each must render the operator's actions without overflow or
-unreadable text.
+Each iframe must render the operator's actions without overflow
+or unreadable text, and `document.documentElement.dataset.layout`
+must equal the expected bucket from the table above.
 
 ## Validation
 

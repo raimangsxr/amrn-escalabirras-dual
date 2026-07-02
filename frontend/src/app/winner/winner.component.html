@@ -7,7 +7,13 @@
   }"
 >
   <div
-    class="-mt-4 text-[clamp(2rem,7vw,7rem)] font-extrabold leading-tight md:-mt-20"
+    [class]="
+      isShort()
+        ? 'mt-0 text-[clamp(1rem,4vw,2rem)] font-extrabold leading-tight'
+        : isMedium()
+        ? '-mt-4 text-[clamp(1.5rem,5vw,4rem)] font-extrabold leading-tight md:-mt-10'
+        : '-mt-4 text-[clamp(2rem,7vw,7rem)] font-extrabold leading-tight md:-mt-20'
+    "
   >
     <span
       class="bg-gradient-to-r from-violet-500 to-pink-500 bg-clip-text text-transparent"
@@ -16,7 +22,13 @@
     </span>
   </div>
   <div
-    class="mt-12 text-[clamp(2.25rem,8vw,8rem)] font-extrabold leading-tight md:mt-48"
+    [class]="
+      isShort()
+        ? 'mt-2 text-[clamp(1.25rem,5vw,2.5rem)] font-extrabold leading-tight'
+        : isMedium()
+        ? 'mt-6 text-[clamp(2rem,6vw,5rem)] font-extrabold leading-tight md:mt-12'
+        : 'mt-12 text-[clamp(2.25rem,8vw,8rem)] font-extrabold leading-tight md:mt-48'
+    "
   >
     <span
       class="break-words bg-gradient-to-r from-pink-500 to-violet-500 bg-clip-text text-transparent"
@@ -25,7 +37,13 @@
     </span>
   </div>
   <div
-    class="mt-8 text-[clamp(2rem,7vw,7rem)] font-extrabold leading-none md:mt-20"
+    [class]="
+      isShort()
+        ? 'mt-2 text-[clamp(1.25rem,5vw,2.5rem)] font-extrabold leading-none'
+        : isMedium()
+        ? 'mt-4 text-[clamp(1.5rem,5.5vw,4rem)] font-extrabold leading-none md:mt-8'
+        : 'mt-8 text-[clamp(2rem,7vw,7rem)] font-extrabold leading-none md:mt-20'
+    "
   >
     <span
       class="bg-gradient-to-r from-pink-500 to-violet-500 bg-clip-text text-transparent"
