@@ -94,3 +94,31 @@ class EmbedTokenListItem(BaseModel):
 
 class EmbedTokenListResponse(BaseModel):
     tokens: list[EmbedTokenListItem]
+
+
+# Event DTOs
+
+
+class EventRead(BaseModel):
+    """Response body for ``GET /v1/event`` and the success side of ``PUT /v1/event``."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    title: str
+    subtitle: str
+    updated_at: datetime
+
+
+class EventUpdate(BaseModel):
+    """Request body for ``PUT /v1/event``.
+
+    Mirrors the validation in
+    ``specs/contracts/persistence-postgres/contract.md``: each
+    field is trimmed and must be 1 to 80 characters. Empty or
+    over-long values raise the FastAPI validation error, which the
+    global handler in ``app.main`` turns into ``422 invalid_event``.
+    """
+
+    title: str = Field(min_length=1, max_length=80)
+    subtitle: str = Field(min_length=1, max_length=80)

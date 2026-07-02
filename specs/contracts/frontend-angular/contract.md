@@ -7,9 +7,14 @@ Describe the Angular 22 frontend after the migration from
 `002-backend-foundation`, after the addition of operator login +
 embed-token bypass introduced by change `004-auth-and-embed-tokens`,
 after the framework-version bump to v20 introduced by change
-`007-angular-20-migration`, and after the framework-version bump to
-v22 introduced by change `008-angular-22-migration`. The frontend
-lives under `src/`. It is the primary consumer of
+`007-angular-20-migration`, after the framework-version bump to
+v22 introduced by change `008-angular-22-migration`, after the
+operator-only configuration (event info, tokens, logout) was
+moved to the `/admin` route introduced by change
+`009-admin-event-config`, and after the two-dimensional
+(width × height) responsive layout scheme was introduced by
+change `010-responsive-iframe-height`. The frontend lives under
+`src/`. It is the primary consumer of
 `specs/contracts/api-rest/contract.md`,
 `specs/contracts/persistence-postgres/contract.md`, and
 `specs/contracts/auth/contract.md`.
@@ -40,10 +45,13 @@ the tab ends the session.
 
 ## Reactive state model
 
-Two services own frontend state. `AuthService` (under
+Three services own frontend state. `AuthService` (under
 `src/app/auth/auth.service.ts`) owns the operator session.
 `AppService` (under `src/app/services/app.service.ts`) owns
-tournament state. Both expose RxJS streams backed by
+tournament state. `EventService` (under
+`src/app/services/event.service.ts`) owns the singleton event
+info (title, subtitle) and is the only writer/reader of
+`/v1/event`. All three expose RxJS streams backed by
 `BehaviorSubject`s.
 
 ### `AuthService`
@@ -57,6 +65,20 @@ tournament state. Both expose RxJS streams backed by
 | `logout()` | `void` | Clears `sessionStorage` and the `session$` subject. |
 | `exchangeEmbedToken(token)` | `Observable<Session>` | `POST /v1/auth/embed-token`. |
 | `getToken()` | `string \| null` | Synchronous accessor used by the HTTP interceptor. |
+
+### `EventService`
+
+Introduced by change `009-admin-event-config`. Owns the singleton
+event info (`title`, `subtitle`) the operator configures from
+`/admin` and that `MainViewComponent` renders in its header.
+There is at most one row on the backend, so the service holds a
+single `event$` stream rather than a collection.
+
+| Member | Type | Notes |
+| --- | --- | --- |
+| `event$` | `Observable<Event \| null>` | `null` until the first `bootstrap()` resolves. `Event = { id: 1, title: string, subtitle: string, updated_at: string }`. |
+| `bootstrap()` | `Promise<void>` | `GET /v1/event`. Called once at app startup. Sets `event$` to the response, or to `null` on `404`. Other errors propagate and are not retried automatically. |
+| `update(title, subtitle)` | `Observable<Event>` | `PUT /v1/event` with the trimmed values. On 2xx, updates `event$` and returns the response. |
 
 Sessions live in `sessionStorage` under the key
 `escalabirras.session` so they are scoped to the tab. Closing the
@@ -192,19 +214,33 @@ instead; the team input shows `'- - -'` when the slot is `null`.
    button. Dismissing sets `error$` back to `null`. Successful HTTP
    calls also clear `error$`.
 
-10. **Manage embed tokens.** From `MainViewComponent`, click
-    "Tokens" → `TokensComponent` opens. It shows the list of embed
-    tokens (id, name, created_at, last_used_at, revoked_at). The
-    "Crear token" button asks for a name; on success the plaintext
-    `embed_…` is shown exactly once with a "Copiar" button and an
-    inline warning that the value will not be displayed again.
-    "Revocar" soft-deletes the row.
+10. **Manage embed tokens.** Introduced by change
+    `009-admin-event-config`. The `TokensComponent` is hosted
+    inside `AdminComponent` at `/admin`, not inside
+    `MainViewComponent`. The operator navigates to `/admin`
+    directly (bookmark, separate tab, manual URL); there is no
+    button or link from `/` to `/admin`. From `/admin` the same
+    UI is available: list of embed tokens (id, name, created_at,
+    last_used_at, revoked_at), a "Crear token" input that asks
+    for a name, an "Revocar" button per row, and the same
+    copy-once UX for the plaintext token.
 
-11. **Log out.** From `MainViewComponent`, click "Salir" →
+11. **Edit event info.** From `/admin`, the "Info del evento"
+    section shows two text inputs (title, subtitle) bound to
+    `EventService.event$`. "Guardar" calls
+    `EventService.update(title, subtitle)` which `PUT /v1/event`s
+    the trimmed values. On success the inputs keep the new
+    values and a transient confirmation appears. On `422
+    invalid_event` the inputs are not changed and the error
+    banner surfaces the message.
+
+12. **Log out.** From `/admin`, click "Salir" →
     `AuthService.logout()`. `sessionStorage` is cleared, `session$`
     is set to `null`, the router navigates to `/login`. The backend
     `/v1/auth/logout` is called as a courtesy but is a no-op server-
-    side.
+    side. The main view at `/` does **not** expose a Salir button;
+    logging out requires visiting `/admin` (or waiting for the JWT
+    to expire / closing the tab).
 
 ## APIs / Interfaces
 
@@ -244,6 +280,14 @@ instead; the team input shows `'- - -'` when the slot is `null`.
 | `exchangeEmbedToken(token: string)` | `Observable<Session>` | `POST /v1/auth/embed-token`. |
 | `getToken()` | `string \| null` | Synchronous accessor used by the HTTP interceptor. |
 
+### Public service surface (`EventService`)
+
+| Member | Type | Notes |
+| --- | --- | --- |
+| `event$` | `Observable<Event \| null>` | `null` until first `bootstrap()` resolves. |
+| `bootstrap()` | `Promise<void>` | `GET /v1/event`. |
+| `update(title: string, subtitle: string)` | `Observable<Event>` | `PUT /v1/event`; updates `event$` on success. |
+
 ### Routing
 
 `AppRoutingModule` defines:
@@ -252,6 +296,7 @@ instead; the team input shows `'- - -'` when the slot is `null`.
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: '', component: MainViewComponent, canActivate: [authGuard] },
+  { path: 'admin', component: AdminComponent, canActivate: [authGuard] },
   { path: '**', redirectTo: '' },
 ];
 ```
@@ -259,6 +304,15 @@ const routes: Routes = [
 `authGuard` is a `CanActivateFn` that returns `true` when
 `AuthService.isAuthenticated$` is `true`, otherwise redirects to
 `/login`.
+
+The `/admin` route was introduced by `009-admin-event-config`.
+It uses the same `authGuard` as `/`; there is no separate "admin
+guard" and there is no role distinction (a single operator is
+the only authenticated principal in v1). The `MainViewComponent`
+template at `/` contains **no** navigation affordance to
+`/admin` — no `routerLink`, no button, no anchor. The operator
+reaches `/admin` by typing the URL in the address bar or by
+using a bookmark.
 
 The legacy `finishGame`, `addParticipantToGame`, `saveParticipant`,
 `saveWinnerParticipant`, `setNewRecord`, `getNewRecord`,
@@ -357,28 +411,48 @@ has keyboard focus. There is still no visual cue for that focus.
 
 ## Responsive / iframe sizing
 
-Introduced by change `005-responsive-iframe`.
+Introduced by change `005-responsive-iframe`. The two-dimensional
+(width × height) bucket scheme introduced by change
+`010-responsive-iframe-height` supersedes the width-only scheme
+from `005`. The service still observes the iframe size via a
+`ResizeObserver` on `document.body` and applies the resulting
+class to `<html>`. The set of emitted classes is now the cartesian
+product of width and height buckets, not a single axis.
 
 The application must look correct and remain fully usable when
 embedded in an iframe at any reasonable aspect ratio (portrait,
-landscape, square, very small widgets, full-screen takeover).
+landscape, square, very small widgets, full-screen takeover),
+including both axes at once.
 
 ### Layout service
 
 `src/app/services/layout.service.ts` exposes a single
-`layoutClass$: Observable<string>` that emits one of:
+`layoutClass$: Observable<string>` that emits one of nine
+combined buckets:
 
-| Class | Width | Notes |
-| --- | --- | --- |
-| `layout-compact` | `< 480px` | Phone-like widgets, sidebars. Single column. |
-| `layout-narrow` | `480–767px` | Tablet portrait, narrow desktop embeds. |
-| `layout-wide` | `>= 768px` | Desktop, landscape, full-screen embeds. |
+| Class | Width | Height | Typical use |
+| --- | --- | --- | --- |
+| `layout-compact-short` | `< 480px` | `< 384px` | Tiny sidebar widget. |
+| `layout-compact-medium` | `< 480px` | `384–575px` | Cramped phone-portrait. |
+| `layout-compact-tall` | `< 480px` | `>= 576px` | Phone-portrait, narrow. |
+| `layout-narrow-short` | `480–767px` | `< 384px` | Landscape widget. |
+| `layout-narrow-medium` | `480–767px` | `384–575px` | Tablet-portrait, small. |
+| `layout-narrow-tall` | `480–767px` | `>= 576px` | Tablet-portrait, comfortable. |
+| `layout-wide-short` | `>= 768px` | `< 384px` | Landscape projector strip. |
+| `layout-wide-medium` | `>= 768px` | `384–575px` | Landscape small desktop. |
+| `layout-wide-tall` | `>= 768px` | `>= 576px` | Full-screen, default. |
 
-The service uses a `ResizeObserver` on `document.body` and applies
-the class to `<html>`. Components read the class via Angular
-`@HostBinding` (root component) and via Tailwind variants like
-`md:flex-row` for breakpoint-based layout, plus fluid `clamp()`
-sizes for type.
+Width thresholds (`480`, `768`) match the v1 layout (introduced by
+`005-responsive-iframe`). Height thresholds (`384`, `576`) are
+intentionally lower because the deployed iframes are often shorter
+than they are wide; the chosen values keep the three buckets
+balanced for the embedding scenarios documented in `004`.
+
+`document.documentElement` always carries exactly one of these
+nine classes and the value is mirrored to
+`document.documentElement.dataset.layout` for tests / debugging.
+The class is also exposed through `layoutClass$` so Angular
+components can subscribe if needed.
 
 ### Fluid type
 
@@ -391,17 +465,38 @@ values so they scale with the iframe width while staying legible:
 
 ### Layout shifts
 
-| Component | Wide (`>= 768`) | Compact (`< 480`) |
+The height dimension adds two extra rules on top of the width
+buckets introduced by `005`:
+
+- In any `*-short` bucket (`< 384px` tall), the header collapses
+  to a single line (logo hidden, title and subtitle only, smaller
+  fluid type), the Top 3 list is hidden so the team panels can
+  occupy the vertical space, and the celebration overlay shrinks
+  every line of text and removes its vertical margins.
+- In any `*-tall` bucket (`>= 576px` tall), the regular layout
+  described below is restored.
+- The `*-medium` bucket is the intermediate band; it inherits the
+  regular layout, with slightly tighter fluid-type clamps so the
+  content fits.
+
+| Component | `*-tall` (`>= 576px` tall) | `*-short` (`< 384px` tall) |
 | --- | --- | --- |
-| Header (logo + title) | Side-by-side | Stacked, smaller logo |
-| Top 3 + manager | Two columns (logo + top3, manager below) | Stacked |
-| Manager columns | 3 columns (history, red, blue) | 1 column (history, red, blue) |
-| Team panel name + counter | Large | Same, fluid |
-| Celebration overlay | `h-full`, fluid text | `h-full`, fluid text |
-| Login form | Centered card, `w-96` | Centered card, `w-full max-w-sm mx-4` |
+| Header (logo + title) | Logo + title side-by-side (or stacked on `*-compact`) | Logo hidden, title + subtitle only |
+| Top 3 list | Visible | Hidden |
+| Manager columns | `flex-row` on `*-wide`/`*-narrow`; `flex-col` on `*-compact` | `flex-col` with reduced padding |
+| Team panel name + counter | Fluid type per the v1 scale | Smaller fluid type |
+| Celebration overlay | `h-full`, fluid text, normal margins | `h-full`, fluid text, no `mt-*` |
+| Login form | `w-full max-w-sm mx-4` (or `w-96` on `*-wide-tall`) | `w-full max-w-sm mx-2` |
 | Tokens modal | `max-w-2xl`, `max-h-[90%]` | `max-w-full`, `max-h-full` |
 
+The width shifts inherited from `005` (header stacking on
+`*-compact`, manager columns stacking on `*-compact`, login form
+full-width on `*-compact`/`*-narrow`) continue to apply on top of
+the height shifts above.
+
 ### What the operator MUST be able to do in any size
+
+In `/` (the public tournament view):
 
 - Read the current participant name and crate count for each team.
 - See the Top 3.
@@ -409,20 +504,45 @@ values so they scale with the iframe width while staying legible:
 - Click the "Focus para jugar" button (always visible; not hidden
   on small sizes).
 - Press the keyboard shortcuts (`a/z/s/x/q/w`).
-- Open the Tokens modal.
-- Log out.
 - See the celebration overlay without text overflow.
+
+In `/admin` (operator only, separate route):
+
+- Read and edit the event title and subtitle; the inputs must
+  remain usable at every layout bucket.
+- Manage embed tokens (list / create / revoke) with the same
+  controls the modal used to have.
+- Log out.
+
+The Tokens modal and the Salir button are no longer rendered by
+`MainViewComponent`; both moved to `/admin`.
 
 ### Manual test
 
 ```html
+<!-- Wide x Short (landscape widget) — layout-wide-short -->
+<iframe src="https://app.example.com/?embed_token=..." width="800" height="200"></iframe>
+<!-- Compact x Tall (phone-portrait) — layout-compact-tall -->
+<iframe src="https://app.example.com/?embed_token=..." width="320" height="640"></iframe>
+<!-- Compact x Short (tiny sidebar) — layout-compact-short -->
 <iframe src="https://app.example.com/?embed_token=..." width="300" height="200"></iframe>
-<iframe src="https://app.example.com/?embed_token=..." width="768" height="1024"></iframe>
+<!-- Narrow x Tall (tablet-portrait) — layout-narrow-tall -->
+<iframe src="https://app.example.com/?embed_token=..." width="600" height="900"></iframe>
+<!-- Narrow x Medium (small embed) — layout-narrow-medium -->
+<iframe src="https://app.example.com/?embed_token=..." width="600" height="450"></iframe>
+<!-- Wide x Tall (default full-screen) — layout-wide-tall -->
 <iframe src="https://app.example.com/?embed_token=..." width="1920" height="1080"></iframe>
+<!-- Wide x Medium (landscape small) — layout-wide-medium -->
+<iframe src="https://app.example.com/?embed_token=..." width="1024" height="500"></iframe>
+<!-- Narrow x Short (rare, narrow landscape) — layout-narrow-short -->
+<iframe src="https://app.example.com/?embed_token=..." width="700" height="200"></iframe>
+<!-- Compact x Medium (rare, cramped square) — layout-compact-medium -->
+<iframe src="https://app.example.com/?embed_token=..." width="420" height="420"></iframe>
 ```
 
-Each must render the operator's actions without overflow or
-unreadable text.
+Each iframe must render the operator's actions without overflow
+or unreadable text, and `document.documentElement.dataset.layout`
+must equal the expected bucket from the table above.
 
 ## Validation
 

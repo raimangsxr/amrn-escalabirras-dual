@@ -24,6 +24,7 @@ All routes are prefixed with `/v1`:
 /v1/auth/me
 /v1/tokens
 /v1/tokens/{token_id}
+/v1/event
 /v1/participants
 /v1/participants/{participant_id}
 /v1/participants/{participant_id}/crates/increment
@@ -77,6 +78,29 @@ Introduced by change `004-auth-and-embed-tokens`. See
 | `crates` | `integer` | Non-negative crate count. |
 | `created_at` | `string` (ISO 8601, UTC) | Server-assigned creation timestamp. |
 
+### `Event`
+
+Introduced by change `009-admin-event-config`. A singleton row
+(`id = 1`) holding the tournament's display info. Edited by the
+operator from the `/admin` page; read by every authenticated
+client (including the public tournament display) on load.
+
+```json
+{
+  "id": 1,
+  "title": "II Torneo Motero de Escalabirras",
+  "subtitle": "XV Concentración Motera Ría de Noia",
+  "updated_at": "2026-06-28T10:00:00.000Z"
+}
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | `integer` | Always `1`. Synthetic PK reserved for a future multi-event schema. |
+| `title` | `string` | Trimmed, 1 to 80 characters. Rendered as the main headline on `/`. |
+| `subtitle` | `string` | Trimmed, 1 to 80 characters. Rendered below the title on `/`. |
+| `updated_at` | `string` (ISO 8601, UTC) | Server-assigned timestamp of the last successful PUT. |
+
 ### Error body
 
 Every non-2xx response returns the same JSON shape:
@@ -95,8 +119,10 @@ Every non-2xx response returns the same JSON shape:
 | `401` | `invalid_embed_token` | `POST /v1/auth/embed-token` with unknown or revoked token. |
 | `404` | `participant_not_found` | `participant_id` does not exist |
 | `404` | `token_not_found` | `token_id` does not exist (on `DELETE /v1/tokens/{id}`). |
+| `404` | `event_not_found` | `GET /v1/event` when the singleton row does not exist (only on a fresh DB before migration `0003_add_event` has been applied or before any PUT). |
 | `409` | `crates_underflow` | Decrement called when `crates == 0` |
 | `422` | `invalid_name` | Name empty, longer than 20, or not a string |
+| `422` | `invalid_event` | `PUT /v1/event` with empty or > 80 chars in `title` or `subtitle`. |
 | `422` | `validation_error` | Any other FastAPI request validation error |
 | `500` | `internal_error` | Unhandled server error |
 
@@ -182,6 +208,57 @@ Soft-revoke an embed token. Sets `revoked_at = NOW()`.
 - Responses:
   - `204 No Content`.
   - `404 Not Found` + `token_not_found` when the id does not exist.
+
+### Event endpoints
+
+Introduced by change `009-admin-event-config`. The `event`
+resource is a singleton: the table holds exactly one row
+(`id = 1`). PUT is upsert-shaped: it replaces the row's contents
+in place; the row is created on the first successful PUT if it
+does not exist.
+
+#### `GET /v1/event`
+
+Read the current event info. Both the public tournament view
+(`/`) and the operator's admin view (`/admin`) call this on
+load.
+
+- Auth: Bearer.
+- Responses:
+  - `200 OK` + `Event`.
+  - `404 Not Found` + `event_not_found` if the singleton row
+    does not exist (only happens if migration `0003_add_event`
+    has not been applied, or if the row was manually deleted).
+    In practice `0003_add_event` seeds the row on install, so
+    this response is rare; the frontend treats it as "no event
+    yet" and renders an empty headline.
+
+#### `PUT /v1/event`
+
+Replace the singleton event row's `title` and `subtitle`. Used
+by `AdminComponent`'s "Guardar" button.
+
+- Auth: Bearer.
+- Request body:
+  ```json
+  { "title": "II Torneo Motero de Escalabirras",
+    "subtitle": "XV Concentración Motera Ría de Noia" }
+  ```
+- Validation: `title` and `subtitle` are trimmed; each must be
+  `1 <= len <= 80`.
+- Side effects: updates `event.title`, `event.subtitle`, and
+  `event.updated_at = NOW()`. If the row does not exist yet, it
+  is inserted with `id = 1`.
+- Responses:
+  - `200 OK` + the updated `Event`.
+  - `422 Unprocessable Entity` + `invalid_event` when either
+    field is empty after trimming or longer than 80 chars.
+
+There is intentionally no `POST /v1/event` (no creation flow:
+PUT is upsert) and no `DELETE /v1/event` (no deletion flow: the
+singleton is permanent for the lifetime of the deployment). The
+singleton shape is enforced by convention; the table allows more
+rows for a possible future multi-event schema.
 
 ### Existing endpoints
 

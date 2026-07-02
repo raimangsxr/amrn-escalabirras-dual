@@ -12,7 +12,7 @@ contracts:
   - id: frontend-angular
     path: specs/contracts/frontend-angular/contract.md
     status: active
-    description: Angular 22 frontend contract. Login + embed-token flow added by 004-auth-and-embed-tokens. Responsive iframe sizing added by 005-responsive-iframe. Framework bumps added by 007-angular-20-migration and 008-angular-22-migration.
+    description: Angular 22 frontend contract. Login + embed-token flow added by 004-auth-and-embed-tokens. Responsive iframe sizing added by 005-responsive-iframe. Framework bumps added by 007-angular-20-migration and 008-angular-22-migration. Two-dimensional (width x height) responsive buckets added by 010-responsive-iframe-height.
   - id: auth
     path: specs/contracts/auth/contract.md
     status: active
@@ -59,8 +59,18 @@ changes:
     status: active
     contract: frontend-angular
     description: Bump the Angular frontend from v20 to v22 (22.0.4). Installs Node 24 LTS via Homebrew to meet v22's minimum Node version. Keeps NgModules, RxJS, zone.js, and Karma/Jasmine.
+  - id: 009-admin-event-config
+    path: specs/changes/009-admin-event-config/
+    status: active
+    contract: frontend-angular
+    description: Move operator-only configuration (event info, embed tokens, logout) to a new /admin route. Add /v1/event endpoints and an event singleton table. Remove Tokens/Salir buttons and any navigation to /admin from the main view.
+  - id: 010-responsive-iframe-height
+    path: specs/changes/010-responsive-iframe-height/
+    status: active
+    contract: frontend-angular
+    description: Extend the responsive iframe layout to also adapt to the iframe's height. Promote LayoutService to a two-dimensional (width x height) bucket with nine combined classes. Collapse the header, hide the logos and Top 3, and shrink the celebration overlay on short iframes.
 
 active:
-  change: specs/changes/008-angular-22-migration/
+  change: specs/changes/010-responsive-iframe-height/
   contract: specs/contracts/frontend-angular/contract.md
-  context_pack: specs/changes/008-angular-22-migration/context-pack.md
+  context_pack: specs/changes/010-responsive-iframe-height/context-pack.md
